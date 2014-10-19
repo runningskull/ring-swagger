@@ -98,6 +98,9 @@
 (s/defschema RootModel
   {:sub {:foo Long}})
 
+(s/defschema AdvancedRootModel
+  {:sub (s/maybe {:foo Long})})
+
 (fact "with-named-sub-schemas"
   (fact "add :name meta-data to sub-schemas"
     (meta (:sub (with-named-sub-schemas RootModel))) => {:name 'RootModelSub})
@@ -119,6 +122,11 @@
     (collect-models (with-named-sub-schemas RootModel))
     => {'RootModel RootModel
         'RootModelSub (:sub RootModel)})
+
+  (fact "Inlined-sub-schemas as are collected from Schemas such as s/Maybe"
+    (collect-models (with-named-sub-schemas AdvancedRootModel))
+    => {'AdvancedRootModel AdvancedRootModel
+        'AdvancedRootModelSub (:sub AdvancedRootModel)})
 
   (fact "Described anonymous models are collected"
     (let [schema (describe {:sub (describe {:foo Long} "the sub schema")} "the root schema")]
