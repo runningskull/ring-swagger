@@ -85,6 +85,14 @@
     {:type "string" :pattern (str e)}
     {:type "string" :format "regex"}))
 
+
+;; Clojure types 
+(defmethod json-type int    [_] {:type "integer" :format "int32"})
+(defmethod json-type long   [_] {:type "integer" :format "int64"})
+(defmethod json-type num    [_] {:type "integer" :format "double"})
+(defmethod json-type float  [_] {:type "integer" :format "double"})
+(defmethod json-type double [_] {:type "integer" :format "double"})
+
 ;; Schemas
 ;; Convert the most common predicates by mapping fn to Class
 (def predicate-to-class {integer? java.lang.Long
