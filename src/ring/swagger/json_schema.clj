@@ -86,12 +86,12 @@
     {:type "string" :format "regex"}))
 
 
-;; Clojure types 
-(defmethod json-type int    [_] {:type "integer" :format "int32"})
-(defmethod json-type long   [_] {:type "integer" :format "int64"})
-(defmethod json-type num    [_] {:type "integer" :format "double"})
-(defmethod json-type float  [_] {:type "integer" :format "double"})
-(defmethod json-type double [_] {:type "integer" :format "double"})
+;; Clojure types (does not work)
+; (defmethod json-type int    [_] {:type "integer" :format "int32"})
+; (defmethod json-type long   [_] {:type "integer" :format "int64"})
+; (defmethod json-type num    [_] {:type "integer" :format "double"})
+; (defmethod json-type float  [_] {:type "integer" :format "double"})
+; (defmethod json-type double [_] {:type "integer" :format "double"})
 
 ;; Schemas
 ;; Convert the most common predicates by mapping fn to Class
@@ -108,6 +108,7 @@
 (defmethod json-type schema.core.EqSchema       [e] (->json (class (:v e))))
 (defmethod json-type schema.core.NamedSchema    [e] (->json (:schema e)))
 (defmethod json-type schema.core.AnythingSchema [_] nil)
+
 
 (defmethod json-type :default [e]
   (if-let [schema-name (s/schema-name e)]
