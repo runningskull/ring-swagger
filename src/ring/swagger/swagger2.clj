@@ -40,7 +40,11 @@
   (cond
     (plain-map? schema)
     (if (and (seq (pop keys)) (s/schema-name schema))
-      schema
+      (into (empty schema)
+              (for [[k v] schema
+                    :when (jsons/not-predicate? k)
+                    :let [keys (conj keys (s/explicit-schema-key k))]]
+                [k (collect-schemas keys v)]))
       (with-meta
         (into (empty schema)
               (for [[k v] schema
