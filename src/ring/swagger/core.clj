@@ -31,7 +31,11 @@
   (cond
     (plain-map? schema)
     (if (and (seq (pop keys)) (s/schema-name schema))
-      schema
+      (into (empty schema)
+            (for [[k v] schema
+                  :when (jsons/not-predicate? k)
+                  :let [keys (conj keys (s/explicit-schema-key k))]]
+              [k (collect-schemas keys v)]))
       (with-meta
         (into (empty schema)
               (for [[k v] schema
@@ -210,25 +214,25 @@
 (defn api-declaration [parameters swagger api basepath]
   (if-let [details (and swagger (swagger api))]
     (response
-      (merge
-        swagger-defaults
-        resource-defaults
-        (select-keys parameters [:apiVersion :produces :consumes])
-        {:basePath basepath
-         :resourcePath "/"
-         :models (transform-models (extract-models details))
-         :apis (for [{:keys [method uri metadata] :as route} (:routes details)
-                     :let [{:keys [return summary notes nickname parameters
-                                   responseMessages authorizations]} metadata]]
-                 {:path (swagger-path uri)
-                  :operations [(merge
-                                 (jsons/->json return :top true)
-                                 {:method (-> method name .toUpperCase)
-                                  :authorizations (or authorizations {})
-                                  :summary (or summary "")
-                                  :notes (or notes "")
-                                  :nickname (or nickname (generate-nick route))
-                                  :responseMessages (convert-response-messages responseMessages)
-                                  :parameters (convert-parameters parameters)})]})}))))
+     (merge
+      swagger-defaults
+      resource-defaults
+      (select-keys parameters [:apiVersion :produces :consumes])
+      {:basePath basepath
+       :resourcePath "/"
+       :models (transform-models (extract-models details))
+       :apis (for [{:keys [method uri metadata] :as route} (:routes details)
+                   :let [{:keys [return summary notes nickname parameters
+                                 responseMessages authorizations]} metadata]]
+               {:path (swagger-path uri)
+                :operations [(merge
+                              (jsons/->json return :top true)
+                              {:method (-> method name .toUpperCase)
+                               :authorizations (or authorizations {})
+                               :summary (or summary "")
+                               :notes (or notes "")
+                               :nickname (or nickname (generate-nick route))
+                               :responseMessages (convert-response-messages responseMessages)
+                               :parameters (convert-parameters parameters)})]})}))))
 
 

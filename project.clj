@@ -1,4 +1,4 @@
-(defproject org.clojars.runningskull/ring-swagger "0.18.0-SNAPSHOT-FORK-4"
+(defproject org.clojars.runningskull/ring-swagger "0.18.0-SNAPSHOT-FORK-5"
   :description "Swagger Spec for Ring Apps"
   :url "https://github.com/metosin/ring-swagger"
   :license {:name "Eclipse Public License"
