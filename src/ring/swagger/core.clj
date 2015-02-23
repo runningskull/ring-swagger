@@ -39,7 +39,9 @@
         (into (empty schema)
               (for [[k v] schema
                     :when (jsons/not-predicate? k)
-                    :let [keys (conj keys (my-explicit-schema-key k))]]
+                    :let [keys (if (s/schema-name v)
+                                 [(keyword (s/schema-name v))]
+                                 (conj keys (my-explicit-schema-key k)))]]
                 [k (collect-schemas keys v)]))
         schema-meta))
     
