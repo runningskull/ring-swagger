@@ -1,5 +1,6 @@
 (ns ring.swagger.common
-  (:require [plumbing.core :refer [fn-> dissoc-in]]))
+  (:require [schema.core :as s]
+            [plumbing.core :refer [fn-> dissoc-in]]))
 
 (defn remove-empty-keys
   "removes empty keys from a map"
@@ -53,3 +54,18 @@
       (if-not (iff v)
         (assoc-in m ks v)
         (dissoc-in m ks)))))
+
+
+(clojure.core/defrecord UidKey [k])
+
+(defn uid-key [k]
+  (UidKey. k))
+
+(defn uid-key? [k]
+  (instance? UidKey k))
+
+
+(defn my-explicit-schema-key [ks]
+  (cond (keyword? ks) ks
+        (uid-key? ks) :_id_
+        :else (s/explicit-schema-key ks)))

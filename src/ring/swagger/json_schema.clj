@@ -1,6 +1,6 @@
 (ns ring.swagger.json-schema
   (:require [schema.core :as s]
-            [ring.swagger.common :refer [plain-map?]]
+            [ring.swagger.common :refer [plain-map? my-explicit-schema-key]]
             [flatland.ordered.map :refer :all]))
 
 (def ^:dynamic *ignore-missing-mappings* false)
@@ -141,6 +141,6 @@
   (into (empty schema)
         (for [[k v] schema
               :when (not-predicate? k)
-              :let [k (s/explicit-schema-key k)
+              :let [k (my-explicit-schema-key k)
                     v (try->json v k)]]
           (and v [k v]))))
