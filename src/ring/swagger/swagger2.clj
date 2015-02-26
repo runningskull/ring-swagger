@@ -54,6 +54,15 @@
                 [k (collect-schemas keys v)]))
         schema-meta))
 
+    (instance? schema.core.Maybe schema)
+    (collect-schemas keys (:schema schema))
+
+    ;; TODO: this should probably collect all schemas, not just first
+    (or (instance? schema.core.Both schema)
+        (instance? schema.core.Either schema))
+    (collect-schemas keys (first (:schemas schema)))
+    
+    
     (valid-container? schema)
     (contain schema (collect-schemas keys (first schema)))
 
