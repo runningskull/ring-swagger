@@ -35,23 +35,24 @@
 ;; COPY from 1.2
 (defn- full-name [path] (->> path (map name) (map lc/capitalized) (apply str) symbol))
 
+
 ;; COPY from 1.2
 (defn- collect-schemas [keys schema]
   (cond
     (plain-map? schema)
-    (if (and (seq (pop keys)) (s/schema-name schema))
-      (into (empty schema)
-              (for [[k v] schema
-                    :when (jsons/not-predicate? k)
-                    :let [keys (conj keys (s/explicit-schema-key k))]]
-                [k (collect-schemas keys v)]))
+    (let [schema-name (s/schema-name schema)
+          schema-meta (if schema-name
+                        (meta schema)
+                        {:name (full-name keys)})]
       (with-meta
         (into (empty schema)
               (for [[k v] schema
                     :when (jsons/not-predicate? k)
-                    :let [keys (conj keys (s/explicit-schema-key k))]]
+                    :let [keys (if (s/schema-name v)
+                                 [(keyword (s/schema-name v))]
+                                 (conj keys (my-explicit-schema-key k)))]]
                 [k (collect-schemas keys v)]))
-        {:name (full-name keys)}))
+        schema-meta))
 
     (valid-container? schema)
     (contain schema (collect-schemas keys (first schema)))

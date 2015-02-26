@@ -49,6 +49,7 @@
     (contain schema (collect-schemas keys (first schema)))
 
     :else schema))
+
 (defn with-named-sub-schemas
   "Traverses a schema tree of Maps, Sets and Sequences and add Schema-name to all
    anonymous maps between the root and any named schemas in thre tree. Names of the
