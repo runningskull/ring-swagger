@@ -55,17 +55,3 @@
         (assoc-in m ks v)
         (dissoc-in m ks)))))
 
-
-(clojure.core/defrecord UidKey [k])
-
-(defn uid-key [k]
-  (UidKey. k))
-
-(defn uid-key? [k]
-  (instance? UidKey k))
-
-
-(defn my-explicit-schema-key [ks]
-  (cond (keyword? ks) ks
-        (uid-key? ks) :_id_
-        :else (s/explicit-schema-key ks)))
