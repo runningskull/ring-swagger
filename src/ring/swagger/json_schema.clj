@@ -1,6 +1,6 @@
 (ns ring.swagger.json-schema
   (:require [schema.core :as s]
-            [ring.swagger.common :refer [plain-map? my-explicit-schema-key]]
+            [ring.swagger.common :refer [plain-map?]]
             [flatland.ordered.map :refer :all]))
 
 (def ^:dynamic *ignore-missing-mappings* false)
@@ -122,8 +122,10 @@
 ;; Schema -> Json Schema
 ;;
 
-(defn not-predicate? [x]
-  (not= (class x) schema.core.Predicate))
+(defn predicate? [x]
+  (= (class x) schema.core.Predicate))
+
+(def not-predicate? (complement predicate?))
 
 (defn try->json [v k]
   (try (->json v)
@@ -141,6 +143,20 @@
   (into (empty schema)
         (for [[k v] schema
               :when (not-predicate? k)
-              :let [k (my-explicit-schema-key k)
+              :let [k (s/explicit-schema-key k)
                     v (try->json v k)]]
           (and v [k v]))))
+
+(defn additional-properties
+  "Take predicate key'd schemas and turn them into a vector of
+   additionalProperties. Later we'll use `oneOf` to group them."
+  [schema]
+  {:pre [(plain-map? schema)]}
+  (let [props (vec (for [[k v] schema
+                         :when (predicate? k)
+                         :let [v (try->json v (quote k))]]
+
+                     (when v v)))]
+    (if (> (count props) 1)
+      {:oneOf props}
+      (first props))))

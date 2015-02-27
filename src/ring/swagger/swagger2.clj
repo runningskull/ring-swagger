@@ -28,6 +28,10 @@
   (binding [jsons/*swagger-spec-version* "2.0"]
     (jsons/properties schema)))
 
+(defn ->additional-properties [schema]
+  (binding [jsons/*swagger-spec-version* "2.0"]
+    (jsons/additional-properties schema)))
+
 ;;
 ;; Schema transformations
 ;;
@@ -35,6 +39,12 @@
 ;; COPY from 1.2
 (defn- full-name [path] (->> path (map name) (map lc/capitalized) (apply str) symbol))
 
+(defn- schema-keys [keys k schema]
+  (if (s/schema-name schema)
+    [(keyword (s/schema-name schema))]
+    (conj keys (if (jsons/not-predicate? k)
+                 (s/explicit-schema-key k)
+                 (quote k)))))
 
 ;; COPY from 1.2
 (defn- collect-schemas [keys schema]
@@ -47,10 +57,9 @@
       (with-meta
         (into (empty schema)
               (for [[k v] schema
-                    :when (jsons/not-predicate? k)
-                    :let [keys (if (s/schema-name v)
-                                 [(keyword (s/schema-name v))]
-                                 (conj keys (my-explicit-schema-key k)))]]
+                    :when (or (jsons/not-predicate? k)
+                              (= s/Keyword k))
+                    :let [keys (schema-keys keys k v)]]
                 [k (collect-schemas keys v)]))
         schema-meta))
 
@@ -98,11 +107,13 @@
 
 (defn transform [schema]
   (let [properties (->properties schema)
+        additional-properties (->additional-properties schema)
         required (->> (required-keys schema)
                       (filter (partial contains? properties))
                       seq)]
     (remove-empty-keys
       {:properties properties
+       :additionalProperties additional-properties
        :required required})))
 
 ; COPY from 1.2
