@@ -28,6 +28,13 @@
 
 (defn- full-name [path] (->> path (map name) (map lc/capitalized) (apply str) symbol))
 
+(defn- schema-keys [keys k schema]
+  (if (s/schema-name schema)
+    [(keyword (s/schema-name schema))]
+    (conj keys (if (jsons/not-predicate? k)
+                 (s/explicit-schema-key k)
+                 (quote k)))))
+
 (defn- collect-schemas [keys schema]
   (cond
     (plain-map? schema)
@@ -38,12 +45,20 @@
       (with-meta
         (into (empty schema)
               (for [[k v] schema
-                    :when (jsons/not-predicate? k)
-                    :let [keys (if (s/schema-name v)
-                                 [(keyword (s/schema-name v))]
-                                 (conj keys (s/explicit-schema-key k)))]]
+                    :when (or (jsons/not-predicate? k)
+                              (= s/Keyword k))
+                    :let [keys (schema-keys keys k v)]]
                 [k (collect-schemas keys v)]))
         schema-meta))
+
+    (instance? schema.core.Maybe schema)
+    (collect-schemas keys (:schema schema))
+
+    ;; TODO: this should probably collect all schemas, not just first
+    (or (instance? schema.core.Both schema)
+        (instance? schema.core.Either schema))
+    (collect-schemas keys (first (:schemas schema)))
+    
     
     (valid-container? schema)
     (contain schema (collect-schemas keys (first schema)))

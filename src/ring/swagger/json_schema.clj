@@ -149,13 +149,12 @@
 
 (defn additional-properties
   "Take predicate key'd schemas and turn them into a vector of
-   additionalProperties. Later we'll use `oneOf` to group them."
+   additionalProperties. Use `oneOf` to group them if needed."
   [schema]
   {:pre [(plain-map? schema)]}
   (let [props (vec (for [[k v] schema
                          :when (predicate? k)
                          :let [v (try->json v (quote k))]]
-
                      (when v v)))]
     (if (> (count props) 1)
       {:oneOf props}
